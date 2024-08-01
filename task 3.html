@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic-Tac-Toe</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 5px;
+            justify-content: center;
+            margin: 20px auto;
+        }
+
+        .cell {
+            width: 100px;
+            height: 100px;
+            font-size: 2em;
+            cursor: pointer;
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+        }
+
+        .cell:hover {
+            background-color: #e0e0e0;
+        }
+
+        #status {
+            margin-top: 20px;
+            font-size: 1.5em;
+        }
+    </style>
+</head>
+<body>
+    <h1>Tic-Tac-Toe</h1>
+    <div id="board" class="board">
+        <button class="cell" id="cell0"></button>
+        <button class="cell" id="cell1"></button>
+        <button class="cell" id="cell2"></button>
+        <button class="cell" id="cell3"></button>
+        <button class="cell" id="cell4"></button>
+        <button class="cell" id="cell5"></button>
+        <button class="cell" id="cell6"></button>
+        <button class="cell" id="cell7"></button>
+        <button class="cell" id="cell8"></button>
+    </div>
+    <div id="status"></div>
+
+    <script>
+        const board = document.getElementById('board');
+        const statusDiv = document.getElementById('status');
+        const cells = Array.from(document.querySelectorAll('.cell'));
+
+        let currentPlayer = 'X'; // Starting player
+        let boardState = Array(9).fill(null); // Track the state of each cell
+        let gameActive = true; // To check if the game is ongoing
+
+        const winPatterns = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
+            [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
+            [0, 4, 8], [2, 4, 6] // Diagonals
+        ];
+
+        function checkWinner() {
+            for (const pattern of winPatterns) {
+                const [a, b, c] = pattern;
+                if (boardState[a] && boardState[a] === boardState[b] && boardState[a] === boardState[c]) {
+                    return boardState[a];
+                }
+            }
+            return null;
+        }
+
+        function aiMove() {
+            const availableMoves = boardState
+                .map((value, index) => value === null ? index : null)
+                .filter(index => index !== null);
+
+            if (availableMoves.length === 0) return;
+
+            const randomMove = availableMoves[Math.floor(Math.random() * availableMoves.length)];
+            boardState[randomMove] = currentPlayer;
+            cells[randomMove].textContent = currentPlayer;
+        }
+
+        function handleClick(event) {
+            const index = cells.indexOf(event.target);
+            if (boardState[index] || !gameActive) return;
+
+            boardState[index] = currentPlayer;
+            event.target.textContent = currentPlayer;
+
+            const winner = checkWinner();
+            if (winner) {
+                statusDiv.textContent = `${winner} Wins!`;
+                gameActive = false;
+                return;
+            }
+
+            if (!boardState.includes(null)) {
+                statusDiv.textContent = "It's a Draw!";
+                gameActive = false;
+                return;
+            }
+
+            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+            statusDiv.textContent = `Player ${currentPlayer}'s Turn`;
+
+            if (currentPlayer === 'O') {
+                setTimeout(() => {
+                    aiMove();
+                    const winner = checkWinner();
+                    if (winner) {
+                        statusDiv.textContent = `${winner} Wins!`;
+                        gameActive = false;
+                        return;
+                    }
+                    if (!boardState.includes(null)) {
+                        statusDiv.textContent = "It's a Draw!";
+                        gameActive = false;
+                        return;
+                    }
+                    currentPlayer = 'X';
+                    statusDiv.textContent = `Player ${currentPlayer}'s Turn`;
+                }, 500); // Delay AI move for realism
+            }
+        }
+
+        function initializeGame() {
+            cells.forEach(cell => cell.addEventListener('click', handleClick));
+            statusDiv.textContent = `Player ${currentPlayer}'s Turn`;
+        }
+
+        initializeGame();
+    </script>
+</body>
+</html>
